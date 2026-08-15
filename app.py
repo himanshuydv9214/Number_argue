@@ -17,7 +17,7 @@ from streamlit_drawable_canvas import st_canvas
 
 MODEL_DIR = os.path.join(os.path.dirname(__file__), "saved_models")
 
-st.set_page_config(page_title="MNIST: 3 Models, 1 Digit", page_icon="✏️", layout="centered")
+st.set_page_config(page_title="1 DIGIT,3 MINDS", page_icon="✏️", layout="centered")
 
 
 @st.cache_resource
