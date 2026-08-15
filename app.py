@@ -74,6 +74,22 @@ def preprocess_camera_frame(image: Image.Image) -> np.ndarray | None:
     return resized.astype("float32") / 255.0
 
 
+def debug_camera_frame(image: Image.Image) -> np.ndarray:
+    """Draw a green box around whatever contour OpenCV picked, for debugging."""
+    frame = np.array(image.convert("RGB"))
+    gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+    _, thresh = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+
+    contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    debug = frame.copy()
+    if contours:
+        largest = max(contours, key=cv2.contourArea)
+        x, y, w, h = cv2.boundingRect(largest)
+        cv2.rectangle(debug, (x, y), (x + w, y + h), (0, 255, 0), 3)
+    return debug
+
+
 def predict_all(models, arr: np.ndarray):
     perceptron, ann, cnn = models
     flat_input = arr.reshape(1, 28, 28)
@@ -139,6 +155,10 @@ with col1:
             arr = preprocess_camera_frame(image)
             if arr is None:
                 st.warning("Couldn't find a clear digit in the frame. Try better lighting or a bigger digit.")
+            debug_mode = st.checkbox("Show debug view (what OpenCV detected)")
+            if debug_mode:
+                debug_img = debug_camera_frame(image)
+                st.image(debug_img, caption="Detected region (green box)")
 
 with col2:
     st.subheader("Predictions")
